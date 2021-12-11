@@ -3,8 +3,8 @@
  * @module view/widget/recent_posts
  */
 const { Component } = require('inferno');
-const { cacheComponent } = require('../../util/cache');
-const ArticleMedia = require('../common/article_media');
+const { cacheComponent } = require('hexo-component-inferno/lib/util/cache');
+const ArticleMedia = require('hexo-component-inferno/lib/view/common/article_media');
 
 /**
  * Recent posts widget JSX component.
@@ -25,11 +25,37 @@ const ArticleMedia = require('../common/article_media');
  */
 class RecentPosts extends Component {
   render() {
-    const { title, posts } = this.props;
+    const { title, posts, counter} = this.props;
 
     return (
       <div class="card widget" data-type="recent-posts">
         <div class="card-content">
+			<nav class="level is-mobile">
+				<div class="level-item has-text-centered is-marginless">
+					<div>
+						<p class="heading">{counter.post.title}</p>
+						<a href={counter.post.url}>
+							<p class="title">{counter.post.count}</p>
+						</a>
+					</div>
+				</div>
+				<div class="level-item has-text-centered is-marginless">
+					<div>
+						<p class="heading">{counter.category.title}</p>
+						<a href={counter.category.url}>
+							<p class="title">{counter.category.count}</p>
+						</a>
+					</div>
+				</div>
+				<div class="level-item has-text-centered is-marginless">
+					<div>
+						<p class="heading">{counter.tag.title}</p>
+						<a href={counter.tag.url}>
+							<p class="title">{counter.tag.count}</p>
+						</a>
+					</div>
+				</div>
+			</nav>
           <h3 class="menu-label">{title}</h3>
           {posts.map((post) => {
             return (
@@ -69,7 +95,12 @@ class RecentPosts extends Component {
  */
 RecentPosts.Cacheable = cacheComponent(RecentPosts, 'widget.recentposts', (props) => {
   const { site, helper, limit = 5 } = props;
-  const { url_for, __, date_xml, date } = helper;
+  const { url_for, __, date_xml, date, _p } = helper;
+  
+  const postCount = site.posts.length;
+  const categoryCount = site.categories.filter(category => category.length).length;
+  const tagCount = site.tags.filter(tag => tag.length).length;
+ 
   if (!site.posts.length) {
     return null;
   }
@@ -90,6 +121,23 @@ RecentPosts.Cacheable = cacheComponent(RecentPosts, 'widget.recentposts', (props
   return {
     posts,
     title: __('widget.recents'),
+    counter: {
+            post: {
+                count: postCount,
+                title: _p('common.post', postCount),
+                url: url_for('/archives')
+            },
+            category: {
+                count: categoryCount,
+                title: _p('common.category', categoryCount),
+                url: url_for('/categories')
+            },
+            tag: {
+                count: tagCount,
+                title: _p('common.tag', tagCount),
+                url: url_for('/tags')
+            }
+        },
   };
 });
 
